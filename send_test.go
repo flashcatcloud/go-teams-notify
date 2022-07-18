@@ -29,6 +29,7 @@ func TestTeamsClientSend(t *testing.T) {
 	simpleMsgCard := NewMessageCard()
 	simpleMsgCard.Text = "Hello World"
 	var tests = []struct {
+		name                  string
 		reqURL                string
 		reqMsg                MessageCard
 		resBody               string // httpClient response body text
@@ -38,8 +39,8 @@ func TestTeamsClientSend(t *testing.T) {
 		skipURLVal            bool // whether webhook URL validation is applied (e.g., GH-68)
 		resStatus             int  // httpClient response status
 	}{
-		// invalid webhookURL - url.Parse error
 		{
+			name:       "invalid webhookURL - url.Parse error",
 			reqURL:     "ht\ttp://",
 			reqMsg:     simpleMsgCard,
 			resStatus:  0,
@@ -48,8 +49,8 @@ func TestTeamsClientSend(t *testing.T) {
 			error:      &url.Error{},
 			skipURLVal: false,
 		},
-		// invalid webhookURL - missing prefix in webhook URL
 		{
+			name:       "invalid webhookURL - missing prefix in webhook URL",
 			reqURL:     "",
 			reqMsg:     simpleMsgCard,
 			resStatus:  0,
@@ -58,8 +59,8 @@ func TestTeamsClientSend(t *testing.T) {
 			error:      ErrWebhookURLUnexpected,
 			skipURLVal: false,
 		},
-		// invalid httpClient.Do call
 		{
+			name:       "invalid httpClient.Do call using outlook.office.com URL",
 			reqURL:     "https://outlook.office.com/webhook/xxx",
 			reqMsg:     simpleMsgCard,
 			resStatus:  200,
@@ -68,8 +69,8 @@ func TestTeamsClientSend(t *testing.T) {
 			error:      &url.Error{},
 			skipURLVal: false,
 		},
-		// invalid httpClient.Do call
 		{
+			name:       "invalid httpClient.Do call using outlook.office365.com URL",
 			reqURL:     "https://outlook.office365.com/webhook/xxx",
 			reqMsg:     simpleMsgCard,
 			resStatus:  200,
@@ -78,8 +79,8 @@ func TestTeamsClientSend(t *testing.T) {
 			error:      &url.Error{},
 			skipURLVal: false,
 		},
-		// invalid response status code
 		{
+			name:       "invalid response status code using outlook.office.com URL",
 			reqURL:     "https://outlook.office.com/webhook/xxx",
 			reqMsg:     simpleMsgCard,
 			resStatus:  400,
@@ -88,8 +89,8 @@ func TestTeamsClientSend(t *testing.T) {
 			error:      errors.New(""),
 			skipURLVal: false,
 		},
-		// invalid response status code
 		{
+			name:       "invalid response status code using outlook.office365.com URL",
 			reqURL:     "https://outlook.office365.com/webhook/xxx",
 			reqMsg:     simpleMsgCard,
 			resStatus:  400,
@@ -98,8 +99,8 @@ func TestTeamsClientSend(t *testing.T) {
 			error:      errors.New(""),
 			skipURLVal: false,
 		},
-		// valid
 		{
+			name:       "valid values using outlook.office.com URL",
 			reqURL:     "https://outlook.office.com/webhook/xxx",
 			reqMsg:     simpleMsgCard,
 			resStatus:  200,
@@ -108,8 +109,8 @@ func TestTeamsClientSend(t *testing.T) {
 			error:      nil,
 			skipURLVal: false,
 		},
-		// valid
 		{
+			name:       "valid values using outlook.office365.com URL",
 			reqURL:     "https://outlook.office365.com/webhook/xxx",
 			reqMsg:     simpleMsgCard,
 			resStatus:  200,
@@ -118,11 +119,10 @@ func TestTeamsClientSend(t *testing.T) {
 			error:      nil,
 			skipURLVal: false,
 		},
-		// custom webhook domain (e.g., GH-68) without disabling validation
-		//
-		// This test case should not result in an actual client request going
-		// out as validation failure should occur.
 		{
+			// This test case should not result in an actual client request
+			// going out as validation failure should occur.
+			name:       "custom webhook domain without disabling validation",
 			reqURL:     "https://example.webhook.office.com/webhook/xxx",
 			reqMsg:     simpleMsgCard,
 			resStatus:  0,
@@ -131,13 +131,12 @@ func TestTeamsClientSend(t *testing.T) {
 			error:      ErrWebhookURLUnexpected,
 			skipURLVal: false,
 		},
-		// custom webhook domain (e.g., GH-68) with validation disabled
-		//
-		// This is expected to succeed, provided that the actual webhook URL
-		// is valid. GH-68 indicates that private webhook endpoints exist, but
-		// without knowing the names or valid patterns, this is about all we
-		// can do for now?
 		{
+			// This is expected to succeed, provided that the actual webhook
+			// URL is valid. GH-68 indicates that private webhook endpoints
+			// exist, but without knowing the names or valid patterns, this is
+			// about all we can do for now?
+			name:       "custom webhook domain with validation disabled",
 			reqURL:     "https://example.webhook.office.com/webhook/xxx",
 			reqMsg:     simpleMsgCard,
 			resStatus:  200,
@@ -146,8 +145,8 @@ func TestTeamsClientSend(t *testing.T) {
 			error:      nil,
 			skipURLVal: true,
 		},
-		// custom webhook domain with custom validation patterns
 		{
+			name:                  "custom webhook domain with custom validation patterns matching requirements",
 			reqURL:                "https://arbitrary.domain.com/webhook/xxx",
 			reqMsg:                simpleMsgCard,
 			resStatus:             200,
@@ -157,8 +156,8 @@ func TestTeamsClientSend(t *testing.T) {
 			skipURLVal:            false,
 			validationURLPatterns: []string{DefaultWebhookURLValidationPattern, "arbitrary.domain.com"},
 		},
-		// custom webhook domain with custom validation patterns not matching requirements
 		{
+			name:                  "custom webhook domain with custom validation patterns not matching requirements",
 			reqURL:                "https://arbitrary.test.com/webhook/xxx",
 			reqMsg:                simpleMsgCard,
 			resStatus:             200,
@@ -168,8 +167,8 @@ func TestTeamsClientSend(t *testing.T) {
 			skipURLVal:            false,
 			validationURLPatterns: []string{DefaultWebhookURLValidationPattern, "arbitrary.domain.com"},
 		},
-		// custom webhook domain with complex custom validation pattern matching requirements
 		{
+			name:                  "custom webhook domain with complex custom validation pattern matching requirements",
 			reqURL:                "https://foo.domain.com/webhook/xxx",
 			reqMsg:                simpleMsgCard,
 			resStatus:             200,
@@ -184,119 +183,87 @@ func TestTeamsClientSend(t *testing.T) {
 		// Create range scoped var for use within closure
 		test := test
 
-		client := NewTestClient(func(req *http.Request) (*http.Response, error) {
-			// Test request parameters
-			assert.Equal(t, req.URL.String(), test.reqURL)
+		t.Run(test.name, func(t *testing.T) {
 
-			// GH-46; fix contributed by @davecheney (thank you!)
-			//
-			// The RoundTripper documentation notes that nil must be returned
-			// as the error value if a response is received. A non-nil error
-			// should be returned for failure to obtain a response. Failure to
-			// obtain a response is indicated by the test table response
-			// error, so we represent that failure to obtain a response by
-			// returning nil and the test table response error explaining why
-			// a response could not be retrieved.
-			if test.resError != nil {
-				return nil, test.resError
+			client := NewTestClient(func(req *http.Request) (*http.Response, error) {
+				// Test request parameters
+				assert.Equal(t, req.URL.String(), test.reqURL)
+
+				// GH-46; fix contributed by @davecheney (thank you!)
+				//
+				// The RoundTripper documentation notes that nil must be
+				// returned as the error value if a response is received. A
+				// non-nil error should be returned for failure to obtain a
+				// response. Failure to obtain a response is indicated by the
+				// test table response error, so we represent that failure to
+				// obtain a response by returning nil and the test table
+				// response error explaining why a response could not be
+				// retrieved.
+				if test.resError != nil {
+					return nil, test.resError
+				}
+
+				// GH-46 (cont) If no table test response errors are provided,
+				// then the response was retrieved (provided below), so we are
+				// required to return nil as the error value along with the
+				// response.
+				return &http.Response{
+					StatusCode: test.resStatus,
+
+					// Send response to be tested
+					Body: ioutil.NopCloser(bytes.NewBufferString(test.resBody)),
+
+					// Must be set to non-nil value or it panics
+					Header: make(http.Header),
+				}, nil
+			})
+			c := &teamsClient{httpClient: client}
+			c.AddWebhookURLValidationPatterns(test.validationURLPatterns...)
+
+			// Disable webhook URL prefix validation if specified by table
+			// test entry. See GH-68 for additional details.
+			if test.skipURLVal {
+				t.Log("Calling SkipWebhookURLValidationOnSend")
+				c.SkipWebhookURLValidationOnSend(true)
 			}
 
-			// GH-46 (cont) If no table test response errors are provided,
-			// then the response was retrieved (provided below), so we are
-			// required to return nil as the error value along with the
-			// response.
-			return &http.Response{
-				StatusCode: test.resStatus,
+			err := c.Send(test.reqURL, test.reqMsg)
+			switch {
 
-				// Send response to be tested
-				Body: ioutil.NopCloser(bytes.NewBufferString(test.resBody)),
-
-				// Must be set to non-nil value or it panics
-				Header: make(http.Header),
-			}, nil
-		})
-		c := &teamsClient{httpClient: client}
-		c.AddWebhookURLValidationPatterns(test.validationURLPatterns...)
-
-		// Disable webhook URL prefix validation if specified by table test
-		// entry. See GH-68 for additional details.
-		if test.skipURLVal {
-			t.Log("Calling SkipWebhookURLValidationOnSend")
-			c.SkipWebhookURLValidationOnSend(true)
-		}
-
-		err := c.Send(test.reqURL, test.reqMsg)
-		if err != nil {
-
-			// Type assertion check between returned error and specified table
-			// test error.
-			//
-			// WARNING: errors.As modifies the error target, so we create a
-			// copy of test.error for use with errors.As so that we don't
-			// modify the original and affect any later tests in this loop.
-			targetErr := test.error
-			if !errors.As(err, &targetErr) {
+			// An error occurred, but table test entry indicates no error expected.
+			case err != nil && test.error == nil:
+				t.Logf("FAIL: test %d; error occurred, but none expected!", idx)
 				t.Fatalf(
-					"FAIL: test %d; got %T, want %T",
+					"\nFAIL: test %d\ngot %v\nwant %v",
 					idx,
 					err,
-					targetErr,
+					test.error,
 				)
-			} else {
-				t.Logf(
-					"OK: test %d; targetErr is of type %T, err is of type %T",
+
+			// No error occurred, but table test entry indicates one expected.
+			case err == nil && test.error != nil:
+				t.Logf("FAIL: test %d; no error occurred, but one was expected!", idx)
+				t.Fatalf(
+					"\nFAIL: test %d\ngot %v\nwant %v",
 					idx,
-					targetErr,
 					err,
+					test.error,
 				)
-				t.Logf(
-					"OK: test %d; targetErr has value '%s'",
-					idx,
-					targetErr.Error(),
-				)
-				t.Logf(
-					"OK: test %d; error response has value '%s'",
-					idx,
-					err.Error(),
-				)
+
+			// No error occurred and table test entry indicates no error expected.
+			case err == nil && test.error == nil:
+				t.Logf("OK: test %d; no error occurred and table test entry indicates no error expected.", idx)
+
+			// Error occurred and table test entry indicates one expected.
+			case err != nil && test.error != nil:
+				t.Logf("OK: test %d; error occurred and table test entry indicates one expected.", idx)
+
 			}
-		} else {
-			t.Logf("OK: test %d; no error; response body: '%s'", idx, test.resBody)
-		}
 
-		switch {
-
-		// An error occurred, but table test entry indicates no error expected.
-		case err != nil && test.error == nil:
-			t.Logf("FAIL: test %d; error occurred, but none expected!", idx)
-			t.Fatalf(
-				"FAIL: test %d; got '%v', want '%v'",
-				idx,
-				err,
-				test.error,
-			)
-
-		// No error occurred, but table test entry indicates one expected.
-		case err == nil && test.error != nil:
-			t.Logf("FAIL: test %d; no error occurred, but one was expected!", idx)
-			t.Fatalf(
-				"FAIL: test %d; got '%v', want '%v'",
-				idx,
-				err,
-				test.error,
-			)
-
-		// No error occurred and table test entry indicates no error expected.
-		case err == nil && test.error == nil:
-			t.Logf("OK: test %d; no error occurred and table test entry indicates no error expected.", idx)
-
-		// Error occurred and table test entry indicates one expected.
-		case err != nil && test.error != nil:
-			t.Logf("OK: test %d; error occurred and table test entry indicates one expected.", idx)
-
-		}
+		})
 
 	}
+
 }
 
 // helper for testing --------------------------------------------------------------------------------------------------
