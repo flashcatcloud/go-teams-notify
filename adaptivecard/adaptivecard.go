@@ -914,6 +914,8 @@ func (a Attachment) Validate() error {
 		ErrInvalidType,
 	)
 
+	v.SelfValidate(a.Content)
+
 	return v.Err()
 }
 
