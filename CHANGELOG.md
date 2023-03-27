@@ -41,8 +41,9 @@ The following types of changes will be recorded in this file:
   - (GH-207) Update vuln analysis GHAW to use on.push hook
 - `Adaptive Card` format
   - (GH-206) Update `AdaptiveCardMaxVersion` to 1.5
-- (GH-212) Update `InList`, `InListIfFieldValNotEmpty` validators
-- (GH-216) Refactor `TopLevelCard.Validate`
+  - (GH-216) Refactor `TopLevelCard.Validate`
+- Other
+  - (GH-212) Update `InList`, `InListIfFieldValNotEmpty` validators
 
 ### Fixed
 
