@@ -26,6 +26,7 @@ A package to send messages to a Microsoft Teams channel.
     - [How to create a webhook URL (Connector)](#how-to-create-a-webhook-url-connector)
   - [Examples](#examples)
     - [Basic](#basic)
+    - [Specify proxy server](#specify-proxy-server)
     - [User Mention](#user-mention)
     - [Tables](#tables)
     - [Set custom user agent](#set-custom-user-agent)
@@ -191,6 +192,16 @@ This is an example of a simple client application which uses this library.
   - File: [basic](./examples/adaptivecard/basic/main.go)
 - `MessageCard`
   - File: [basic](./examples/messagecard/basic/main.go)
+
+#### Specify proxy server
+
+This is an example of a simple client application which uses this library to
+route a generated message through a specified proxy server.
+
+- `Adaptive Card`
+  - File: [basic](./examples/adaptivecard/proxy/main.go)
+- `MessageCard`
+  - File: [basic](./examples/messagecard/proxy/main.go)
 
 #### User Mention
 
