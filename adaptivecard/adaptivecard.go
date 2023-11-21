@@ -70,10 +70,10 @@ const (
 
 // Attachment constants.
 //
-// https://docs.microsoft.com/en-us/microsoftteams/platform/task-modules-and-cards/cards/cards-reference
-// https://docs.microsoft.com/en-us/dotnet/api/microsoft.bot.schema.attachmentlayouttypes
-// https://docs.microsoft.com/en-us/javascript/api/botframework-schema/attachmentlayouttypes
-// https://github.com/matthidinger/ContosoScubaBot/blob/master/Cards/1-Schools.JSON
+//   - https://docs.microsoft.com/en-us/microsoftteams/platform/task-modules-and-cards/cards/cards-reference
+//   - https://docs.microsoft.com/en-us/dotnet/api/microsoft.bot.schema.attachmentlayouttypes
+//   - https://docs.microsoft.com/en-us/javascript/api/botframework-schema/attachmentlayouttypes
+//   - https://github.com/matthidinger/ContosoScubaBot/blob/master/Cards/1-Schools.JSON
 const (
 
 	// AttachmentContentType is the supported type value for an attached
@@ -291,12 +291,11 @@ const (
 // Valid types for an Adaptive Card element. Not all types are supported by
 // Microsoft Teams.
 //
-// https://adaptivecards.io/explorer/AdaptiveCard.html
-//
 // TODO: Confirm whether all types are supported.
 //
-// https://docs.microsoft.com/en-us/microsoftteams/platform/task-modules-and-cards/cards/cards-reference#support-for-adaptive-cards
-// https://docs.microsoft.com/en-us/adaptive-cards/authoring-cards/universal-action-model#schema
+//   - https://adaptivecards.io/explorer/AdaptiveCard.html
+//   - https://docs.microsoft.com/en-us/microsoftteams/platform/task-modules-and-cards/cards/cards-reference#support-for-adaptive-cards
+//   - https://docs.microsoft.com/en-us/adaptive-cards/authoring-cards/universal-action-model#schema
 const (
 	TypeElementActionSet      string = "ActionSet"
 	TypeElementColumnSet      string = "ColumnSet"
@@ -736,9 +735,9 @@ type Actions []Action
 // Action represents an action that a user may take on a card. Actions
 // typically get rendered in an "action bar" at the bottom of a card.
 //
-// https://adaptivecards.io/explorer/ActionSet.html
-// https://adaptivecards.io/explorer/AdaptiveCard.html
-// https://docs.microsoft.com/en-us/microsoftteams/platform/task-modules-and-cards/cards/cards-reference
+//   - https://adaptivecards.io/explorer/ActionSet.html
+//   - https://adaptivecards.io/explorer/AdaptiveCard.html
+//   - https://docs.microsoft.com/en-us/microsoftteams/platform/task-modules-and-cards/cards/cards-reference
 //
 // TODO: Extend with additional supported fields.
 type Action struct {
@@ -784,9 +783,9 @@ type Action struct {
 // type (e.g., Column, ColumnSet, Container) is tapped or selected.
 // Action.ShowCard is not supported.
 //
-// https://adaptivecards.io/explorer/Container.html
-// https://adaptivecards.io/explorer/ColumnSet.html
-// https://adaptivecards.io/explorer/Column.html
+//   - https://adaptivecards.io/explorer/Container.html
+//   - https://adaptivecards.io/explorer/ColumnSet.html
+//   - https://adaptivecards.io/explorer/Column.html
 //
 // TODO: Extend with additional supported fields.
 type ISelectAction struct {
