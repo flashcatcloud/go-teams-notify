@@ -781,6 +781,9 @@ type Action struct {
 	//
 	// https://docs.microsoft.com/en-us/microsoftteams/platform/task-modules-and-cards/cards/cards-reference#support-for-adaptive-cards
 	// https://docs.microsoft.com/en-us/adaptive-cards/authoring-cards/universal-action-model#schema
+	Verb string `json:"verb"`
+	Data string `json:"data"`
+
 	Type string `json:"type"`
 
 	// ID is a unique identifier associated with this Action.
