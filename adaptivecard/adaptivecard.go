@@ -18,8 +18,8 @@ import (
 	"strconv"
 	"strings"
 
-	goteamsnotify "github.com/atc0005/go-teams-notify/v2"
-	"github.com/atc0005/go-teams-notify/v2/internal/validator"
+	goteamsnotify "github.com/flashcatcloud/go-teams-notify/v2"
+	"github.com/flashcatcloud/go-teams-notify/v2/internal/validator"
 )
 
 // General constants.
