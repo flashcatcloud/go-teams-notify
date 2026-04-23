@@ -34,6 +34,11 @@ const (
 	WebhookURLOrgWebhookPrefix = "https://example.webhook.office.com"
 )
 
+// Known Workflow URL patterns for submitting messages to Microsoft Teams.
+const (
+	WorkflowURLBaseDomain = `^https:\/\/(?:.*)(:?\.azure-api|logic\.azure|api\.powerplatform)\.(?:com|net)`
+)
+
 // DisableWebhookURLValidation is a special keyword used to indicate to
 // validation function(s) that webhook URL validation should be disabled.
 //
@@ -129,9 +134,9 @@ type messageValidator interface {
 	Validate() error
 }
 
-// teamsMessage is the interface shared by all supported message formats for
+// TeamsMessage is the interface shared by all supported message formats for
 // submission to a Microsoft Teams channel.
-type teamsMessage interface {
+type TeamsMessage interface {
 	messagePreparer
 	messageValidator
 
@@ -296,7 +301,7 @@ func (c *teamsClient) Send(webhookURL string, webhookMessage MessageCard) error 
 
 // Send is a wrapper function around the SendWithContext method in order to
 // provide backwards compatibility.
-func (c *TeamsClient) Send(webhookURL string, message teamsMessage) error {
+func (c *TeamsClient) Send(webhookURL string, message TeamsMessage) error {
 	// Create context that can be used to emulate existing timeout behavior.
 	ctx, cancel := context.WithTimeout(context.Background(), DefaultWebhookSendTimeout)
 	defer cancel()
@@ -316,7 +321,7 @@ func (c *teamsClient) SendWithContext(ctx context.Context, webhookURL string, we
 // SendWithContext submits a given message to a Microsoft Teams channel using
 // the provided webhook URL. The http client request honors the cancellation
 // or timeout of the provided context.
-func (c *TeamsClient) SendWithContext(ctx context.Context, webhookURL string, message teamsMessage) error {
+func (c *TeamsClient) SendWithContext(ctx context.Context, webhookURL string, message TeamsMessage) error {
 	return sendWithContext(ctx, c, webhookURL, message)
 }
 
@@ -332,7 +337,7 @@ func (c *teamsClient) SendWithRetry(ctx context.Context, webhookURL string, webh
 // SendWithRetry provides message retry support when submitting messages to a
 // Microsoft Teams channel. The caller is responsible for providing the
 // desired context timeout, the number of retries and retries delay.
-func (c *TeamsClient) SendWithRetry(ctx context.Context, webhookURL string, message teamsMessage, retries int, retriesDelay int) error {
+func (c *TeamsClient) SendWithRetry(ctx context.Context, webhookURL string, message TeamsMessage, retries int, retriesDelay int) error {
 	return sendWithRetry(ctx, c, webhookURL, message, retries, retriesDelay)
 }
 
@@ -380,6 +385,7 @@ func processResponse(response *http.Response) (string, error) {
 	}
 	responseString := string(responseData)
 
+	// TODO: Refactor for v3 series once O365 connector support is dropped.
 	switch {
 	// 400 Bad Response is likely an indicator that we failed to provide a
 	// required field in our JSON payload. For example, when leaving out the
@@ -393,8 +399,22 @@ func processResponse(response *http.Response) (string, error) {
 
 		return "", err
 
-	// Microsoft Teams developers have indicated that a 200 status code is
-	// insufficient to confirm that a message was successfully submitted.
+	case response.StatusCode == 202:
+		// 202 Accepted response is expected for Workflow connector URL
+		// submissions.
+
+		logger.Println("202 Accepted response received as expected for workflow connector")
+
+		return responseString, nil
+
+	// DEPRECATED
+	//
+	// See https://github.com/atc0005/go-teams-notify/issues/262
+	//
+	// Microsoft Teams developers have indicated that receiving a 200 status
+	// code when submitting payloads to O365 connectors is insufficient to
+	// confirm that a message was successfully submitted.
+	//
 	// Instead, clients should ensure that a specific response string was also
 	// returned along with a 200 status code to confirm that a message was
 	// sent successfully. Because there is a chance that unintentional
@@ -402,6 +422,11 @@ func processResponse(response *http.Response) (string, error) {
 	//
 	// See atc0005/go-teams-notify#59 for more information.
 	case responseString != strings.TrimSpace(ExpectedWebhookURLResponseText):
+		logger.Printf(
+			"StatusCode: %v, Status: %v\n", response.StatusCode, response.Status,
+		)
+		logger.Printf("ResponseString: %v\n", responseString)
+
 		err = fmt.Errorf(
 			"got %q, expected %q: %w",
 			responseString,
@@ -432,7 +457,10 @@ func validateWebhook(webhookURL string, skipWebhookValidation bool, patterns []s
 	}
 
 	if len(patterns) == 0 {
-		patterns = []string{DefaultWebhookURLValidationPattern}
+		patterns = []string{
+			DefaultWebhookURLValidationPattern,
+			WorkflowURLBaseDomain,
+		}
 	}
 
 	// Indicate passing validation if at least one pattern matches.
@@ -442,6 +470,8 @@ func validateWebhook(webhookURL string, skipWebhookValidation bool, patterns []s
 			return err
 		}
 		if matched {
+			logger.Printf("Pattern %v matched", pat)
+
 			return nil
 		}
 	}
@@ -469,7 +499,7 @@ func (c *TeamsClient) ValidateWebhook(webhookURL string) error {
 // sendWithContext submits a given message to a Microsoft Teams channel using
 // the provided webhook URL and client. The http client request honors the
 // cancellation or timeout of the provided context.
-func sendWithContext(ctx context.Context, client MessageSender, webhookURL string, message teamsMessage) error {
+func sendWithContext(ctx context.Context, client MessageSender, webhookURL string, message TeamsMessage) error {
 	logger.Printf("sendWithContext: Webhook message received: %#v\n", message)
 
 	if err := client.ValidateWebhook(webhookURL); err != nil {
@@ -533,7 +563,7 @@ func sendWithContext(ctx context.Context, client MessageSender, webhookURL strin
 // sendWithRetry provides message retry support when submitting messages to a
 // Microsoft Teams channel. The caller is responsible for providing the
 // desired context timeout, the number of retries and retries delay.
-func sendWithRetry(ctx context.Context, client MessageSender, webhookURL string, message teamsMessage, retries int, retriesDelay int) error {
+func sendWithRetry(ctx context.Context, client MessageSender, webhookURL string, message TeamsMessage, retries int, retriesDelay int) error {
 	var result error
 
 	// initial attempt + number of specified retries
