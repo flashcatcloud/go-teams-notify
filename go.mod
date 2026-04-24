@@ -6,7 +6,7 @@
 // Licensed under the MIT License. See LICENSE file in the project root for
 // full license information.
 
-module github.com/flashcatcloud/go-teams-notify
+module github.com/flashcatcloud/go-teams-notify/v2
 
 go 1.14
 
