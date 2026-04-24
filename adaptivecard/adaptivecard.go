@@ -617,6 +617,38 @@ type Element struct {
 
 	// StartLineNumber specifies the initial line number of CodeBlock element, specific to MSTeams.
 	StartLineNumber int `json:"startLineNumber,omitempty"`
+	// -----------------------------------------------------------------
+	// Input.Text / Input.Number fields
+	//
+	// These fields let Elements act as interactive inputs within an
+	// Adaptive Card (schema 1.3+). They are "omitempty" so existing
+	// non-input Elements are not affected.
+	// https://adaptivecards.io/explorer/Input.Text.html
+	// -----------------------------------------------------------------
+
+	// Placeholder describes the helper text shown in an empty Input.
+	Placeholder string `json:"placeholder,omitempty"`
+
+	// Value is the initial value the Input starts with; for Input.Text
+	// this also defines the pre-filled text.
+	Value string `json:"value,omitempty"`
+
+	// IsMultiline, when true, lets Input.Text accept multiple lines.
+	IsMultiline bool `json:"isMultiline,omitempty"`
+
+	// MaxLength caps the character count accepted by Input.Text. 0 means
+	// "no limit" per the schema.
+	MaxLength int `json:"maxLength,omitempty"`
+
+	// Label is the text displayed above the Input field.
+	Label string `json:"label,omitempty"`
+
+	// IsRequired marks the Input as required for Action submission.
+	IsRequired bool `json:"isRequired,omitempty"`
+
+	// ErrorMessage is shown when IsRequired is true and the user submits
+	// with an empty value.
+	ErrorMessage string `json:"errorMessage,omitempty"`
 }
 
 // Container is an Element type that allows grouping items together.
